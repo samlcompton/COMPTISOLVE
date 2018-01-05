@@ -10,9 +10,9 @@ using namespace std;
 	
 class Grid		//declare grid class
 {
-	int n_cells;
+	double n_elements;
 	int n_faces;
-	string astring;
+	mat raw_grid;
 	char ch;
 	//mat input_mesh;
 	public:
@@ -22,21 +22,14 @@ class Grid		//declare grid class
 //definition of open_msh_file() method
 void Grid::open_msh_file()
 {
-	ifstream fin("fem2d_input.csv");
-	if (fin.is_open()) 
-	{ 
-		cout << "argg\n";
-		getline(fin,astring,',');
-		cout << astring,"\n";
-	}
-
-	fin.close();  		
+	raw_grid.load("FEM_HT_input.csv");
+	raw_grid.print();
+	n_elements=raw_grid(0,0);
+	cout <<"number of elements:   " << n_elements << "\n";
+	 		
 }
 
 
-
-
-		
 int main() // main program interface
 {
 	std::cout << "this is a test, calm down\n";	
@@ -46,8 +39,8 @@ int main() // main program interface
   
   	cout << A*B.t() << endl;
 
-	Grid frustration;
-	frustration.open_msh_file();
+	Grid main_grid;
+	main_grid.open_msh_file();
 
 	return 0; 
 	
