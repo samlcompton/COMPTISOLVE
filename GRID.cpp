@@ -69,9 +69,93 @@ void Grid::read_connectivity()
 	
 }
 
+void Grid::get_ebc()
+{
+	int i;
+	n_ebc=raw_grid(n_nodes+n_elements+1,0);
+	node_ebc.zeros(n_ebc,1);
+	val_ebc.zeros(n_ebc,1);
+	for (i=0; i<n_ebc; i++)
+	{
+		node_ebc=raw_grid(i+1+n_nodes+n_elements+1,0);
+		val_ebc(i,0)=raw_grid(i+1+n_nodes+n_elements+1,1);
+	}
+	
+}
+
+
+void Grid::get_nbc()
+{
+	int i;
+	n_nbc=raw_grid(n_nodes+n_elements+1+n_ebc+1,0);
+	node_nbc.zeros(n_nbc,1);
+	val_nbc.zeros(n_nbc,1);
+	for (i=0; i<n_nbc; i++)
+	{
+		node_nbc(i,0)=raw_grid(i+1+n_nodes+n_elements+1+n_ebc,0);
+		val_nbc(i,0)=raw_grid(i+1+n_nodes+n_elements+1+n_ebc,1);
+	}
+	
+}
+
+ 
+
 int Grid::get_nele()
 {
 	return n_elements;
+}
+
+soln::soln(Grid input_grid) //soln constructor 
+{
+	sol_grid=input_grid;
+}
+
+soln::~soln() //soln destructor
+{
+}
+
+void soln::get_K_mat()
+{
+//sol_grid is the grid object for this scope
+	mat ELK;
+	mat ELKRHS;
+	mat psi; 
+	psi.zeros(sol_grid.NPE,1);
+	double xi;
+	double eta;
+	int en;
+	int ngpxi;
+	int ngpeta;
+	//int j;
+	K_mat.zeros(sol_grid.n_nodes,sol_grid.n_nodes); //initializing K
+	RHS.zeros(sol_grid.n_nodes,1); // initialzing RHS
+	
+	
+	for(en=0; en<sol_grid.n_elements; en++)
+	{
+		//initializing element and RHS matricies with zeros
+			ELK.zeros(sol_grid.NPE,sol_grid.NPE);
+			ELKRHS.zeros(sol_grid.NPE,1);
+		for(ngpxi=0; ngpxi<sol_grid.NGP; ngpxi++)
+		{	
+			xi=0.0;			
+			for(ngpxi=0; ngpeta<sol_grid.NGP; ngpxi++)
+			{
+				eta=0.0;				
+				psi(0,0)=0.25*(1-xi)*(1-eta);
+				psi(1,0)=0.25*(1+xi)*(1-eta);
+				psi(2)=0.25*(1+xi)*(1+eta);
+				psi(3)=0.25*(1-xi)*(1+eta);			
+			}
+		}
+	
+	
+	
+		
+	}
+	
+	
+	
 }
 
 int main() // main program interface
@@ -84,12 +168,21 @@ int main() // main program interface
   	cout << A*B.t() << endl;
 
 
-	tri_msh MESH;
+	quad_msh MESH;
 	MESH.open_msh_file();
 	cout << "double checking number of elements   " << MESH.get_nele() << "\n";
 	MESH.setNPE(4); // Set the number of nodes per element
 	MESH.read_connectivity();
-
+	MESH.get_ebc();
+	MESH.get_nbc();
+	soln solutionX(MESH);
+	
+	
+	
+	//soln solve;
+	//solve.get_K_mat(MESH.n_nodes);
+	
+	
 	return 0; 
 	
 }
